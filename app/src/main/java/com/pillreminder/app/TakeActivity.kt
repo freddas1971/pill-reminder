@@ -34,6 +34,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Brush
 import com.pillreminder.app.ui.BigButton
+import com.pillreminder.app.ui.RemiMascot
+import androidx.compose.foundation.layout.size
 import com.pillreminder.app.ui.CardWhite
 import com.pillreminder.app.ui.Cream
 import com.pillreminder.app.ui.Ink
@@ -89,8 +91,9 @@ class TakeActivity : ComponentActivity() {
                             finish()
                         }, Modifier.fillMaxWidth(), color = CardWhite, contentColor = PrimaryDeep)
                     } else {
+                        RemiMascot(Modifier.size(84.dp))
                         Text(
-                            "Time to take",
+                            "Remi says it's time to take",
                             style = MaterialTheme.typography.headlineSmall,
                             color = PrimaryDeep,
                             modifier = Modifier.padding(top = 12.dp),

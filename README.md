@@ -1,6 +1,6 @@
-# Pill Reminder
+# Remi
 
-A simple Android app that rings at pill time and shows a photo of which pill to take.
+Remi is a friendly pill reminder: a simple Android app that rings at pill time and shows a photo of which pill to take.
 
 - Add each pill with a photo, instructions and the times to take it
 - Every day, certain weekdays, or every few days, with optional start/end dates

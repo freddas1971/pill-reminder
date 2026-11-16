@@ -29,6 +29,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
+import androidx.compose.ui.res.painterResource
+import com.pillreminder.app.R
 import androidx.compose.material3.IconButton
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.graphics.Brush
@@ -135,9 +137,19 @@ fun PillPhoto(path: String?, size: Dp, modifier: Modifier = Modifier, corner: Dp
         if (b != null) {
             Image(b, contentDescription = "Pill photo", contentScale = ContentScale.Crop, modifier = Modifier.size(size))
         } else {
-            PillDrawing(Modifier.size(size * 0.6f))
+            RemiMascot(Modifier.size(size * 0.8f))
         }
     }
+}
+
+/** Remi, the app's friendly capsule character. */
+@Composable
+fun RemiMascot(modifier: Modifier = Modifier) {
+    Image(
+        painter = painterResource(R.drawable.ic_remi_mascot),
+        contentDescription = null,
+        modifier = modifier,
+    )
 }
 
 @Composable

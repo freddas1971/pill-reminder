@@ -46,7 +46,7 @@ object Family {
 
     fun shareText(s: Settings): String {
         val who = s.personName.ifBlank { "I" }
-        val intro = if (s.personName.isBlank()) "I've set up Pill Reminder" else "${s.personName}'s Pill Reminder is set up"
+        val intro = if (s.personName.isBlank()) "I've set up the Remi pill reminder" else "${s.personName}'s Remi pill reminder is set up"
         return """
             |Hi! $intro so you get a message if a pill is missed.
             |
@@ -153,8 +153,8 @@ object Family {
         runCatching {
             post(
                 s.ntfyServer, s.ntfyTopic,
-                title = "Test from ${name(s)}'s Pill Reminder",
-                message = "If you can see this, family alerts are working.",
+                title = "Test from ${name(s)}'s Remi app",
+                message = "If you can see this, Remi family alerts are working.",
                 priority = PRIORITY_HIGH,
                 tags = listOf("tada"),
             )

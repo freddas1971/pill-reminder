@@ -111,13 +111,14 @@ fun TodayScreen(
                 .padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 22.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
+                RemiMascot(Modifier.padding(start = 8.dp).size(40.dp))
                 Text(
-                    "Pill Reminder",
-                    color = Color.White.copy(alpha = 0.85f),
-                    style = MaterialTheme.typography.titleMedium,
+                    "Remi",
+                    color = Color.White,
+                    style = MaterialTheme.typography.headlineSmall,
                     modifier = Modifier
                         .weight(1f)
-                        .padding(start = 12.dp),
+                        .padding(start = 8.dp),
                 )
                 HeaderIcon(Icons.AutoMirrored.Filled.List, "My pills", onMyPills)
                 HeaderIcon(Icons.Filled.Settings, "Settings", onSettings)
@@ -264,10 +265,10 @@ private fun EmptyState(onAdd: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            PillPhoto(null, 120.dp, corner = 60.dp)
-            Text("No pills added yet", style = MaterialTheme.typography.headlineSmall)
+            RemiMascot(Modifier.size(130.dp))
+            Text("Hi, I'm Remi!", style = MaterialTheme.typography.headlineSmall)
             Text(
-                "Add each pill with its photo and the times to take it. The phone will ring and show you which pill to take.",
+                "Add each pill with its photo and the times to take it. I'll ring at the right time and show you which pill to take.",
                 style = MaterialTheme.typography.bodyLarge,
                 color = Muted,
                 textAlign = TextAlign.Center,

@@ -39,7 +39,7 @@ object Notifier {
         if (nm.getNotificationChannel(CHANNEL) != null) return
         val sound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
             ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-        val channel = NotificationChannel(CHANNEL, "Pill reminders", NotificationManager.IMPORTANCE_HIGH).apply {
+        val channel = NotificationChannel(CHANNEL, "Remi pill reminders", NotificationManager.IMPORTANCE_HIGH).apply {
             description = "Rings when it is time to take a pill"
             setSound(
                 sound,
@@ -65,7 +65,7 @@ object Notifier {
         val id = Scheduler.slotId(slot)
         val timeText = Fmt.time(context, doses.first().minute)
         val title = when {
-            attempt > 0 -> "Reminder: not taken yet ($timeText)"
+            attempt > 0 -> "Remi here again: $timeText pills not taken yet"
             doses.size == 1 -> "Time to take ${doses[0].med.name}"
             else -> "Time for your ${doses.size} pills ($timeText)"
         }
@@ -125,7 +125,7 @@ object Notifier {
         val builder = NotificationCompat.Builder(context, CHANNEL)
             .setSmallIcon(R.drawable.ic_stat_pill)
             .setColor(0xFFC0613F.toInt())
-            .setContentTitle("Test: this is how a reminder looks")
+            .setContentTitle("Hi, it's Remi! This is how a reminder looks")
             .setContentText(if (med != null) "Time to take ${med.name}" else "Your pill's name and photo will show here")
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setPriority(NotificationCompat.PRIORITY_MAX)
