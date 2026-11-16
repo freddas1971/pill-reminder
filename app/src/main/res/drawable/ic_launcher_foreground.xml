@@ -14,7 +14,7 @@
             android:pathData="M54,42 L42,42 A12,12 0 0 0 42,66 L54,66 Z" />
         <!-- right half (warm orange) -->
         <path
-            android:fillColor="#FFB547"
+            android:fillColor="#CFE3C6"
             android:pathData="M54,42 L66,42 A12,12 0 0 1 66,66 L54,66 Z" />
     </group>
     <!-- small bell dot -->

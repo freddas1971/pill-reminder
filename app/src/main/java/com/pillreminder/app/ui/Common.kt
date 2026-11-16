@@ -29,6 +29,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
+import androidx.compose.material3.IconButton
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -57,21 +62,24 @@ import com.pillreminder.app.Photos
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+val HeaderShape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)
+
 @Composable
 fun AppBar(title: String, navigation: (@Composable () -> Unit)? = null, actions: @Composable RowScope.() -> Unit = {}) {
     Row(
         Modifier
             .fillMaxWidth()
-            .background(Teal)
-            .heightIn(min = 64.dp)
-            .padding(horizontal = 8.dp),
+            .clip(HeaderShape)
+            .background(Brush.verticalGradient(listOf(Primary, PrimaryDeep)))
+            .heightIn(min = 76.dp)
+            .padding(start = 8.dp, end = 8.dp, bottom = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        if (navigation != null) navigation() else Spacer(Modifier.width(8.dp))
+        if (navigation != null) navigation() else Spacer(Modifier.width(12.dp))
         Text(
             title,
             color = Color.White,
-            style = MaterialTheme.typography.titleLarge,
+            style = MaterialTheme.typography.headlineSmall,
             modifier = Modifier
                 .weight(1f)
                 .padding(horizontal = 8.dp),
@@ -80,9 +88,39 @@ fun AppBar(title: String, navigation: (@Composable () -> Unit)? = null, actions:
     }
 }
 
+/** Round white-ish button for icons sitting on the terracotta header. */
+@Composable
+fun HeaderIcon(icon: ImageVector, description: String, onClick: () -> Unit) {
+    IconButton(
+        onClick = onClick,
+        modifier = Modifier
+            .padding(2.dp)
+            .size(48.dp)
+            .clip(CircleShape)
+            .background(Color.White.copy(alpha = 0.18f)),
+    ) {
+        Icon(icon, contentDescription = description, tint = Color.White)
+    }
+}
+
+/** Small rounded label, e.g. "Morning" or "Taken". */
+@Composable
+fun Chip(text: String, bg: Color, fg: Color, modifier: Modifier = Modifier) {
+    Text(
+        text,
+        color = fg,
+        style = MaterialTheme.typography.bodyMedium,
+        fontWeight = FontWeight.SemiBold,
+        modifier = modifier
+            .clip(RoundedCornerShape(50))
+            .background(bg)
+            .padding(horizontal = 14.dp, vertical = 5.dp),
+    )
+}
+
 /** Shows the pill's photo, or a drawn pill if there is no photo. */
 @Composable
-fun PillPhoto(path: String?, size: Dp, modifier: Modifier = Modifier, corner: Dp = 14.dp) {
+fun PillPhoto(path: String?, size: Dp, modifier: Modifier = Modifier, corner: Dp = 20.dp) {
     val bitmap by produceState<ImageBitmap?>(initialValue = null, key1 = path) {
         value = withContext(Dispatchers.IO) { Photos.load(path, 700)?.asImageBitmap() }
     }
@@ -90,7 +128,7 @@ fun PillPhoto(path: String?, size: Dp, modifier: Modifier = Modifier, corner: Dp
         modifier
             .size(size)
             .clip(RoundedCornerShape(corner))
-            .background(TealLight),
+            .background(PrimarySoft),
         contentAlignment = Alignment.Center,
     ) {
         val b = bitmap
@@ -109,10 +147,15 @@ fun PillDrawing(modifier: Modifier) {
         val top = (size.height - h) / 2
         val r = CornerRadius(h / 2, h / 2)
         drawRoundRect(Color.White, Offset(0f, top), Size(size.width, h), r)
+        drawRoundRect(Primary, Offset(size.width / 2, top), Size(size.width / 2, h), r)
+        drawRect(Primary, Offset(size.width / 2, top), Size(h / 2, h))
+        // soft shine
         drawRoundRect(
-            Color(0xFFE8963A), Offset(size.width / 2, top), Size(size.width / 2, h), r
+            Color.White.copy(alpha = 0.35f),
+            Offset(h * 0.35f, top + h * 0.18f),
+            Size(size.width * 0.28f, h * 0.16f),
+            CornerRadius(h, h),
         )
-        drawRect(Color(0xFFE8963A), Offset(size.width / 2, top), Size(h / 2, h))
     }
 }
 
@@ -121,7 +164,7 @@ fun BigButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    color: Color = Teal,
+    color: Color = Primary,
     contentColor: Color = Color.White,
     enabled: Boolean = true,
 ) {
@@ -129,7 +172,8 @@ fun BigButton(
         onClick = onClick,
         enabled = enabled,
         modifier = modifier.heightIn(min = 60.dp),
-        shape = RoundedCornerShape(14.dp),
+        shape = RoundedCornerShape(50),
+        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp),
         colors = ButtonDefaults.buttonColors(containerColor = color, contentColor = contentColor),
     ) {
         Text(text, style = MaterialTheme.typography.labelLarge)
@@ -223,21 +267,21 @@ fun SetupIssuesCard(issues: List<SetupIssue>, modifier: Modifier = Modifier) {
     val activity = LocalContext.current as? Activity
     Card(
         modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = AmberLight),
-        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = HoneyLight),
+        shape = RoundedCornerShape(24.dp),
     ) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Filled.Warning, contentDescription = null, tint = Amber)
+                Icon(Icons.Filled.Warning, contentDescription = null, tint = Honey)
                 Spacer(Modifier.width(8.dp))
-                Text("Phone setup needed", style = MaterialTheme.typography.titleMedium, color = Amber)
+                Text("Phone setup needed", style = MaterialTheme.typography.titleMedium, color = Honey)
             }
             issues.forEach { issue ->
                 Column {
                     Text(issue.title, style = MaterialTheme.typography.bodyLarge)
                     Text(issue.detail, style = MaterialTheme.typography.bodyMedium, color = Muted)
                     Spacer(Modifier.height(6.dp))
-                    BigButton(issue.buttonText, onClick = { activity?.let { issue.fix(it) } }, color = Amber)
+                    BigButton(issue.buttonText, onClick = { activity?.let { issue.fix(it) } }, color = Honey)
                 }
             }
         }

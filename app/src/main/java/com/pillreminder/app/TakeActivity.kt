@@ -32,13 +32,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.Brush
 import com.pillreminder.app.ui.BigButton
-import com.pillreminder.app.ui.Green
+import com.pillreminder.app.ui.CardWhite
+import com.pillreminder.app.ui.Cream
+import com.pillreminder.app.ui.Ink
+import com.pillreminder.app.ui.Line
+import com.pillreminder.app.ui.PrimaryDeep
+import com.pillreminder.app.ui.Sage
 import com.pillreminder.app.ui.Muted
 import com.pillreminder.app.ui.PillPhoto
 import com.pillreminder.app.ui.PillTheme
-import com.pillreminder.app.ui.Teal
-import com.pillreminder.app.ui.TealLight
+import com.pillreminder.app.ui.Primary
+import com.pillreminder.app.ui.PrimarySoft
 
 /** The big "time to take your pills" screen, shown from the reminder (also over the lock screen). */
 class TakeActivity : ComponentActivity() {
@@ -67,7 +73,7 @@ class TakeActivity : ComponentActivity() {
                 Column(
                     Modifier
                         .fillMaxSize()
-                        .background(TealLight)
+                        .background(Brush.verticalGradient(listOf(PrimarySoft, Cream)))
                         .verticalScroll(rememberScrollState())
                         .padding(20.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -75,34 +81,35 @@ class TakeActivity : ComponentActivity() {
                 ) {
                     if (doses.isEmpty() || open.isEmpty()) {
                         Spacer(Modifier.height(60.dp))
-                        Text("✓", style = MaterialTheme.typography.headlineMedium.copy(fontSize = MaterialTheme.typography.headlineMedium.fontSize * 3), color = Green)
+                        Text("✓", style = MaterialTheme.typography.headlineMedium.copy(fontSize = MaterialTheme.typography.headlineMedium.fontSize * 3), color = Sage)
                         Text("All done. Well done!", style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center)
                         BigButton("Close", { finish() }, Modifier.fillMaxWidth())
                         BigButton("Open the app", {
                             startActivity(Intent(this@TakeActivity, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
                             finish()
-                        }, Modifier.fillMaxWidth(), color = Color.White, contentColor = Teal)
+                        }, Modifier.fillMaxWidth(), color = CardWhite, contentColor = PrimaryDeep)
                     } else {
                         Text(
                             "Time to take",
                             style = MaterialTheme.typography.headlineSmall,
-                            color = Muted,
+                            color = PrimaryDeep,
                             modifier = Modifier.padding(top = 12.dp),
                         )
                         Text(
                             Fmt.time(this@TakeActivity, open.first().minute),
-                            style = MaterialTheme.typography.headlineMedium,
-                            color = Teal,
+                            style = MaterialTheme.typography.displaySmall,
+                            color = Ink,
                         )
                         open.forEach { d ->
                             Card(
                                 Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(20.dp),
-                                colors = CardDefaults.cardColors(containerColor = Color.White),
+                                shape = RoundedCornerShape(30.dp),
+                                colors = CardDefaults.cardColors(containerColor = CardWhite),
+                                border = androidx.compose.foundation.BorderStroke(1.5.dp, Line),
                             ) {
                                 if (open.size == 1) {
                                     Column(Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                                        PillPhoto(d.med.photoPath, 240.dp, corner = 20.dp)
+                                        PillPhoto(d.med.photoPath, 240.dp, corner = 32.dp)
                                         Spacer(Modifier.height(12.dp))
                                         Text(d.med.name, style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center)
                                         if (d.med.instructions.isNotBlank()) {
@@ -131,7 +138,7 @@ class TakeActivity : ComponentActivity() {
                                 finish()
                             },
                             Modifier.fillMaxWidth().height(72.dp),
-                            color = Green,
+                            color = Sage,
                         )
                         BigButton(
                             "Remind me in ${Scheduler.SNOOZE_MINUTES} minutes",
@@ -140,8 +147,8 @@ class TakeActivity : ComponentActivity() {
                                 finish()
                             },
                             Modifier.fillMaxWidth(),
-                            color = Color.White,
-                            contentColor = Teal,
+                            color = CardWhite,
+                            contentColor = PrimaryDeep,
                         )
                     }
                 }

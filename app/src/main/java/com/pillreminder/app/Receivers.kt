@@ -14,6 +14,7 @@ class AlarmReceiver : BroadcastReceiver() {
             Scheduler.ACTION_FOLLOW_UP -> onFollowUp(context, slot, keys, intent.getIntExtra(Scheduler.EXTRA_ATTEMPT, 0))
             Scheduler.ACTION_TAKEN -> Scheduler.takeFromReminder(context, slot, keys)
             Scheduler.ACTION_SNOOZE -> Scheduler.snooze(context, slot, keys)
+            Scheduler.ACTION_MISSED_CHECK -> Family.missed(context, keys)
         }
     }
 
@@ -26,6 +27,7 @@ class AlarmReceiver : BroadcastReceiver() {
             if (due.isNotEmpty()) {
                 val keys = due.map { it.key }
                 Notifier.show(context, slot, keys, attempt = 0)
+                Scheduler.scheduleMissedCheck(context, slot, keys)
                 if (data.settings.followUps) {
                     Scheduler.scheduleFollowUp(context, slot, keys, attempt = 1, delayMinutes = Scheduler.FOLLOW_UP_MINUTES)
                 }

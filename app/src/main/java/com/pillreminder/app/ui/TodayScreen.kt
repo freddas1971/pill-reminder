@@ -1,5 +1,7 @@
 package com.pillreminder.app.ui
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,6 +29,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -36,10 +39,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -48,6 +53,7 @@ import com.pillreminder.app.Dose
 import com.pillreminder.app.Fmt
 import com.pillreminder.app.Repo
 import com.pillreminder.app.Scheduler
+import kotlinx.coroutines.delay
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -60,6 +66,16 @@ private fun statusOf(dose: Dose, data: AppData, now: LocalDateTime): Status = wh
     dose.dateTime.isAfter(now) -> Status.UPCOMING
     dose.dateTime.plusHours(2).isAfter(now) -> Status.DUE
     else -> Status.MISSED
+}
+
+/** Friendly label and colours for the part of the day. */
+private data class DayPart(val label: String, val bg: Color, val fg: Color)
+
+private fun dayPart(minute: Int): DayPart = when (minute / 60) {
+    in 4..11 -> DayPart("☀  Morning", Color(0xFFFBE7C4), Color(0xFF8A5A0F))
+    in 12..16 -> DayPart("◐  Afternoon", PrimarySoft, PrimaryDeep)
+    in 17..20 -> DayPart("☾  Evening", Color(0xFFE6E2F0), Color(0xFF4E4673))
+    else -> DayPart("✦  Night", Color(0xFFDDE3EA), Color(0xFF34465A))
 }
 
 @Composable
@@ -83,55 +99,90 @@ fun TodayScreen(
     val today = now.toLocalDate()
     val doses = data.dosesOn(date)
     val groups = doses.groupBy { it.minute }.toSortedMap()
+    val done = doses.count { data.taken.containsKey(it.key) }
 
     Column(Modifier.fillMaxSize()) {
-        AppBar("Pill Reminder", actions = {
-            IconButton(onClick = onMyPills) {
-                Icon(Icons.AutoMirrored.Filled.List, contentDescription = "My pills", tint = Color.White)
-            }
-            IconButton(onClick = onSettings) {
-                Icon(Icons.Filled.Settings, contentDescription = "Settings", tint = Color.White)
-            }
-        })
-
-        // Day selector
-        Row(
+        // ---- Header with the day ----
+        Column(
             Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 4.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
+                .clip(HeaderShape)
+                .background(Brush.verticalGradient(listOf(Primary, PrimaryDeep)))
+                .padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 22.dp),
         ) {
-            IconButton(onClick = { onDateChange(date.minusDays(1)) }) {
-                Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = "Previous day", modifier = Modifier.size(40.dp))
-            }
-            Column(
-                Modifier
-                    .weight(1f)
-                    .clickable { onDateChange(today) },
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    when (date) {
-                        today -> "Today"
-                        today.plusDays(1) -> "Tomorrow"
-                        today.minusDays(1) -> "Yesterday"
-                        else -> date.dayOfWeek.name.lowercase().replaceFirstChar { it.uppercase() }
-                    },
-                    style = MaterialTheme.typography.headlineSmall,
+                    "Pill Reminder",
+                    color = Color.White.copy(alpha = 0.85f),
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 12.dp),
                 )
-                Text(Fmt.day(date), style = MaterialTheme.typography.bodyMedium, color = Muted)
-                if (date != today) {
-                    Text("Tap here to go back to today", style = MaterialTheme.typography.bodyMedium, color = Teal)
+                HeaderIcon(Icons.AutoMirrored.Filled.List, "My pills", onMyPills)
+                HeaderIcon(Icons.Filled.Settings, "Settings", onSettings)
+            }
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 4.dp)) {
+                IconButton(onClick = { onDateChange(date.minusDays(1)) }) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = "Previous day",
+                        tint = Color.White, modifier = Modifier.size(40.dp),
+                    )
+                }
+                Column(
+                    Modifier
+                        .weight(1f)
+                        .clickable { onDateChange(today) },
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text(
+                        when (date) {
+                            today -> "Today"
+                            today.plusDays(1) -> "Tomorrow"
+                            today.minusDays(1) -> "Yesterday"
+                            else -> date.dayOfWeek.name.lowercase().replaceFirstChar { it.uppercase() }
+                        },
+                        style = MaterialTheme.typography.displaySmall,
+                        color = Color.White,
+                    )
+                    Text(Fmt.day(date), style = MaterialTheme.typography.bodyLarge, color = Color.White.copy(alpha = 0.9f))
+                    if (date != today) {
+                        Spacer(Modifier.height(6.dp))
+                        Chip("Tap to go back to today", Color.White.copy(alpha = 0.22f), Color.White)
+                    }
+                }
+                IconButton(onClick = { onDateChange(date.plusDays(1)) }) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "Next day",
+                        tint = Color.White, modifier = Modifier.size(40.dp),
+                    )
                 }
             }
-            IconButton(onClick = { onDateChange(date.plusDays(1)) }) {
-                Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "Next day", modifier = Modifier.size(40.dp))
+            if (doses.isNotEmpty()) {
+                Spacer(Modifier.height(14.dp))
+                Column(Modifier.padding(horizontal = 16.dp)) {
+                    Text(
+                        if (done == doses.size) "All $done done. Well done!" else "$done of ${doses.size} taken",
+                        color = Color.White,
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    LinearProgressIndicator(
+                        progress = { done.toFloat() / doses.size },
+                        color = Color(0xFFCFE3C6),
+                        trackColor = Color.White.copy(alpha = 0.25f),
+                        strokeCap = StrokeCap.Round,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(12.dp),
+                    )
+                }
             }
         }
 
         Box(Modifier.weight(1f)) {
             LazyColumn(
-                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 110.dp),
+                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 120.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 if (issues.isNotEmpty()) {
@@ -141,35 +192,34 @@ fun TodayScreen(
                     item { EmptyState(onAdd) }
                 } else if (doses.isEmpty()) {
                     item {
-                        Text(
-                            "No pills to take on this day.",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = Muted,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier
+                        Column(
+                            Modifier
                                 .fillMaxWidth()
                                 .padding(top = 40.dp),
-                        )
-                    }
-                } else {
-                    val left = doses.count { !data.taken.containsKey(it.key) }
-                    if (date == today) {
-                        item {
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            PillPhoto(null, 90.dp, corner = 45.dp)
+                            Spacer(Modifier.height(12.dp))
                             Text(
-                                if (left == 0) "All done for today. Well done!" else "$left still to take today",
-                                style = MaterialTheme.typography.titleMedium,
-                                color = if (left == 0) Green else Ink,
+                                "No pills to take on this day.",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = Muted,
+                                textAlign = TextAlign.Center,
                             )
                         }
                     }
+                } else {
                     groups.forEach { (minute, list) ->
                         item(key = "h$minute") {
-                            Text(
-                                Fmt.time(context, minute),
-                                style = MaterialTheme.typography.headlineMedium,
-                                color = Teal,
-                                modifier = Modifier.padding(top = 8.dp),
-                            )
+                            val part = dayPart(minute)
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(top = 10.dp, bottom = 2.dp),
+                            ) {
+                                Text(Fmt.time(context, minute), style = MaterialTheme.typography.headlineMedium, color = Ink)
+                                Spacer(Modifier.width(12.dp))
+                                Chip(part.label, part.bg, part.fg)
+                            }
                         }
                         items(list, key = { it.key }) { dose ->
                             DoseCard(
@@ -177,10 +227,7 @@ fun TodayScreen(
                                 status = statusOf(dose, data, now),
                                 takenAt = data.taken[dose.key],
                                 canTick = !date.isAfter(today),
-                                onTaken = {
-                                    Repo.markTaken(context, listOf(dose.key))
-                                    Scheduler.afterTickedInApp(context, dose)
-                                },
+                                onTaken = { Scheduler.tickInApp(context, dose) },
                                 onUndo = { Repo.unmarkTaken(context, dose.key) },
                             )
                         }
@@ -191,8 +238,9 @@ fun TodayScreen(
                 onClick = onAdd,
                 icon = { Icon(Icons.Filled.Add, contentDescription = null) },
                 text = { Text("Add a pill", style = MaterialTheme.typography.labelLarge) },
-                containerColor = Teal,
+                containerColor = Primary,
                 contentColor = Color.White,
+                shape = RoundedCornerShape(50),
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(20.dp),
@@ -203,24 +251,33 @@ fun TodayScreen(
 
 @Composable
 private fun EmptyState(onAdd: () -> Unit) {
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .padding(top = 32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+    Card(
+        Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(28.dp),
+        colors = CardDefaults.cardColors(containerColor = CardWhite),
+        border = BorderStroke(1.dp, Line),
     ) {
-        PillPhoto(null, 120.dp, corner = 60.dp)
-        Text("No pills added yet", style = MaterialTheme.typography.headlineSmall)
-        Text(
-            "Add each pill with its photo and the times to take it. The phone will ring and show you which pill to take.",
-            style = MaterialTheme.typography.bodyLarge,
-            color = Muted,
-            textAlign = TextAlign.Center,
-        )
-        BigButton("Add your first pill", onAdd, Modifier.fillMaxWidth())
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            PillPhoto(null, 120.dp, corner = 60.dp)
+            Text("No pills added yet", style = MaterialTheme.typography.headlineSmall)
+            Text(
+                "Add each pill with its photo and the times to take it. The phone will ring and show you which pill to take.",
+                style = MaterialTheme.typography.bodyLarge,
+                color = Muted,
+                textAlign = TextAlign.Center,
+            )
+            BigButton("Add your first pill", onAdd, Modifier.fillMaxWidth())
+        }
     }
 }
+
+private data class CardLook(val bg: Color, val border: Color, val chipBg: Color, val chipFg: Color, val label: String)
 
 @Composable
 private fun DoseCard(
@@ -232,39 +289,40 @@ private fun DoseCard(
     onUndo: () -> Unit,
 ) {
     val context = LocalContext.current
-    val (bg, label, labelColor) = when (status) {
-        Status.TAKEN -> Triple(GreenLight, "Taken", Green)
-        Status.DUE -> Triple(AmberLight, "Take now", Amber)
-        Status.MISSED -> Triple(RedLight, "Missed", Red)
-        Status.UPCOMING -> Triple(Color.White, "Coming up", Muted)
+    val look = when (status) {
+        Status.TAKEN -> CardLook(SageLight, SageLight, Sage, Color.White, "✓ Taken")
+        Status.DUE -> CardLook(HoneyLight, Color(0xFFEBC98A), Honey, Color.White, "Take now")
+        Status.MISSED -> CardLook(RoseLight, Color(0xFFE7B3A8), Rose, Color.White, "Missed")
+        Status.UPCOMING -> CardLook(CardWhite, Line, Color(0xFFF1E6D8), Muted, "Coming up")
     }
     Card(
-        colors = CardDefaults.cardColors(containerColor = bg),
-        shape = RoundedCornerShape(18.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        colors = CardDefaults.cardColors(containerColor = look.bg),
+        shape = RoundedCornerShape(26.dp),
+        border = BorderStroke(1.5.dp, look.border),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
-        Column(Modifier.padding(14.dp)) {
+        Column(Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                PillPhoto(dose.med.photoPath, 96.dp)
-                Spacer(Modifier.width(14.dp))
+                PillPhoto(dose.med.photoPath, 100.dp, corner = 22.dp)
+                Spacer(Modifier.width(16.dp))
                 Column(Modifier.weight(1f)) {
-                    Text(dose.med.name, style = MaterialTheme.typography.titleLarge)
+                    Chip(
+                        if (status == Status.TAKEN && takenAt != null) {
+                            val t = LocalDateTime.ofInstant(Instant.ofEpochMilli(takenAt), ZoneId.systemDefault())
+                            "✓ Taken ${Fmt.time(context, t.hour * 60 + t.minute)}"
+                        } else look.label,
+                        look.chipBg,
+                        look.chipFg,
+                    )
+                    Spacer(Modifier.height(6.dp))
+                    Text(dose.med.name, style = MaterialTheme.typography.titleLarge, color = Ink)
                     if (dose.med.instructions.isNotBlank()) {
                         Text(dose.med.instructions, style = MaterialTheme.typography.bodyLarge, color = Muted)
                     }
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        if (status == Status.TAKEN && takenAt != null) {
-                            val t = LocalDateTime.ofInstant(Instant.ofEpochMilli(takenAt), ZoneId.systemDefault())
-                            "✓ Taken at ${Fmt.time(context, t.hour * 60 + t.minute)}"
-                        } else label,
-                        style = MaterialTheme.typography.titleMedium,
-                        color = labelColor,
-                    )
                 }
             }
             if (canTick) {
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(12.dp))
                 if (status == Status.TAKEN) {
                     TextButton(onClick = onUndo, modifier = Modifier.align(Alignment.End)) {
                         Text("Undo", style = MaterialTheme.typography.bodyLarge, color = Muted)
@@ -274,12 +332,11 @@ private fun DoseCard(
                         "✓  I've taken it",
                         onTaken,
                         Modifier.fillMaxWidth(),
-                        color = if (status == Status.UPCOMING) TealLight else Green,
-                        contentColor = if (status == Status.UPCOMING) Teal else Color.White,
+                        color = if (status == Status.UPCOMING) PrimarySoft else Sage,
+                        contentColor = if (status == Status.UPCOMING) PrimaryDeep else Color.White,
                     )
                 }
             }
         }
     }
 }
-

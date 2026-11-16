@@ -76,19 +76,20 @@ fun MedsScreen(data: AppData, onBack: () -> Unit, onEdit: (String) -> Unit, onAd
                         Modifier
                             .fillMaxWidth()
                             .clickable { onEdit(m.id) },
-                        shape = RoundedCornerShape(18.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                        shape = RoundedCornerShape(26.dp),
+                        colors = CardDefaults.cardColors(containerColor = CardWhite),
+                        border = androidx.compose.foundation.BorderStroke(1.5.dp, Line),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                     ) {
                         Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
-                            PillPhoto(m.photoPath, 80.dp)
+                            PillPhoto(m.photoPath, 84.dp, corner = 20.dp)
                             Spacer(Modifier.width(14.dp))
                             Column(Modifier.weight(1f)) {
                                 Text(m.name, style = MaterialTheme.typography.titleLarge)
                                 if (m.instructions.isNotBlank()) {
                                     Text(m.instructions, style = MaterialTheme.typography.bodyMedium, color = Muted)
                                 }
-                                Text(scheduleSummary(context, m), style = MaterialTheme.typography.bodyMedium, color = Teal)
+                                Text(scheduleSummary(context, m), style = MaterialTheme.typography.bodyMedium, color = PrimaryDeep)
                             }
                             Icon(Icons.Filled.Edit, contentDescription = "Change", tint = Muted)
                         }
@@ -99,8 +100,9 @@ fun MedsScreen(data: AppData, onBack: () -> Unit, onEdit: (String) -> Unit, onAd
                 onClick = onAdd,
                 icon = { Icon(Icons.Filled.Add, contentDescription = null) },
                 text = { Text("Add a pill", style = MaterialTheme.typography.labelLarge) },
-                containerColor = Teal,
+                containerColor = Primary,
                 contentColor = Color.White,
+                shape = RoundedCornerShape(50),
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(20.dp),

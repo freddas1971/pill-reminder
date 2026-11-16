@@ -14,6 +14,7 @@ object Scheduler {
     const val ACTION_FOLLOW_UP = "com.pillreminder.app.FOLLOW_UP"
     const val ACTION_TAKEN = "com.pillreminder.app.TAKEN"
     const val ACTION_SNOOZE = "com.pillreminder.app.SNOOZE"
+    const val ACTION_MISSED_CHECK = "com.pillreminder.app.MISSED_CHECK"
     const val EXTRA_SLOT = "slot"
     const val EXTRA_KEYS = "keys"
     const val EXTRA_ATTEMPT = "attempt"
@@ -92,9 +93,20 @@ object Scheduler {
 
     /** Mark doses as taken from anywhere (notification button, alarm screen) and stop reminders for them. */
     fun takeFromReminder(context: Context, slot: Long, keys: List<String>) {
+        val before = Repo.get(context).taken
+        val newlyTaken = keys.filter { !before.containsKey(it) }
         Repo.markTaken(context, keys)
         cancelFollowUp(context, slot)
         Notifier.cancel(context, slot)
+        Family.taken(context, newlyTaken)
+    }
+
+    /** "I've taken it" pressed on the Today screen. */
+    fun tickInApp(context: Context, dose: Dose) {
+        if (Repo.get(context).taken.containsKey(dose.key)) return
+        Repo.markTaken(context, listOf(dose.key))
+        afterTickedInApp(context, dose)
+        Family.taken(context, listOf(dose.key))
     }
 
     /** Ticked off inside the app: if everything for that time is done, silence its reminder. */
@@ -111,5 +123,26 @@ object Scheduler {
     fun snooze(context: Context, slot: Long, keys: List<String>) {
         Notifier.cancel(context, slot)
         scheduleFollowUp(context, slot, keys, attempt = 0, delayMinutes = SNOOZE_MINUTES)
+        Family.snoozed(context, keys)
+    }
+
+    /** Half an hour after the reminder: tell the family if the doses are still not ticked off. */
+    fun scheduleMissedCheck(context: Context, slot: Long, keys: List<String>) {
+        val am = context.getSystemService(AlarmManager::class.java) ?: return
+        val intent = Intent(context, AlarmReceiver::class.java)
+            .setAction(ACTION_MISSED_CHECK)
+            .putExtra(EXTRA_SLOT, slot)
+            .putExtra(EXTRA_KEYS, keys.toTypedArray())
+        val pi = PendingIntent.getBroadcast(context, slotId(slot), intent, pendingFlags(PendingIntent.FLAG_UPDATE_CURRENT))
+        val at = slot + Family.MISSED_AFTER_MINUTES * 60_000L
+        try {
+            if (canExact(am)) {
+                am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi)
+            } else {
+                am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi)
+            }
+        } catch (e: SecurityException) {
+            am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi)
+        }
     }
 }

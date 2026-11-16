@@ -86,7 +86,7 @@ object Notifier {
 
         val builder = NotificationCompat.Builder(context, CHANNEL)
             .setSmallIcon(R.drawable.ic_stat_pill)
-            .setColor(0xFF0F5257.toInt())
+            .setColor(0xFFC0613F.toInt())
             .setContentTitle(title)
             .setContentText(lines.joinToString(" • "))
             .setCategory(NotificationCompat.CATEGORY_ALARM)
@@ -124,7 +124,7 @@ object Notifier {
         val med = data.meds.firstOrNull()
         val builder = NotificationCompat.Builder(context, CHANNEL)
             .setSmallIcon(R.drawable.ic_stat_pill)
-            .setColor(0xFF0F5257.toInt())
+            .setColor(0xFFC0613F.toInt())
             .setContentTitle("Test: this is how a reminder looks")
             .setContentText(if (med != null) "Time to take ${med.name}" else "Your pill's name and photo will show here")
             .setCategory(NotificationCompat.CATEGORY_ALARM)

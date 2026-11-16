@@ -163,12 +163,12 @@ fun EditScreen(data: AppData, medId: String?, onDone: () -> Unit) {
                 .weight(1f)
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             // ---- Photo ----
             Section("Photo of the pill") {
                 Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    PillPhoto(photoPath, 200.dp, corner = 20.dp)
+                    PillPhoto(photoPath, 200.dp, corner = 32.dp)
                     if (busyPhoto) {
                         Text(
                             "Saving picture…",
@@ -187,9 +187,9 @@ fun EditScreen(data: AppData, medId: String?, onDone: () -> Unit) {
                         modifier = Modifier
                             .weight(1f)
                             .heightIn(min = 60.dp),
-                        shape = RoundedCornerShape(14.dp),
-                        border = BorderStroke(2.dp, Teal),
-                    ) { Text("From gallery", style = MaterialTheme.typography.labelLarge, color = Teal) }
+                        shape = RoundedCornerShape(50),
+                        border = BorderStroke(2.dp, Primary),
+                    ) { Text("From gallery", style = MaterialTheme.typography.labelLarge, color = Primary) }
                 }
                 if (photoPath != null) {
                     TextButton(onClick = { photoPath = null }) {
@@ -207,6 +207,7 @@ fun EditScreen(data: AppData, medId: String?, onDone: () -> Unit) {
                     singleLine = true,
                     textStyle = MaterialTheme.typography.bodyLarge,
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
+                    shape = RoundedCornerShape(18.dp),
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
@@ -218,6 +219,7 @@ fun EditScreen(data: AppData, medId: String?, onDone: () -> Unit) {
                     placeholder = { Text("e.g. 1 tablet with food") },
                     textStyle = MaterialTheme.typography.bodyLarge,
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
+                    shape = RoundedCornerShape(18.dp),
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
@@ -232,19 +234,19 @@ fun EditScreen(data: AppData, medId: String?, onDone: () -> Unit) {
                         Modifier
                             .fillMaxWidth()
                             .padding(vertical = 4.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(TealLight)
+                            .clip(RoundedCornerShape(18.dp))
+                            .background(PrimarySoft)
                             .padding(start = 16.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text(Fmt.time(context, t), style = MaterialTheme.typography.headlineSmall, color = Teal, modifier = Modifier.weight(1f))
+                        Text(Fmt.time(context, t), style = MaterialTheme.typography.headlineSmall, color = Primary, modifier = Modifier.weight(1f))
                         IconButton(onClick = { times = times - t }) {
-                            Icon(Icons.Filled.Close, contentDescription = "Remove this time", tint = Teal)
+                            Icon(Icons.Filled.Close, contentDescription = "Remove this time", tint = Primary)
                         }
                     }
                 }
                 Spacer(Modifier.height(8.dp))
-                BigButton("+ Add a time", { addTime() }, Modifier.fillMaxWidth(), color = TealLight, contentColor = Teal)
+                BigButton("+ Add a time", { addTime() }, Modifier.fillMaxWidth(), color = PrimarySoft, contentColor = PrimaryDeep)
             }
 
             // ---- Frequency ----
@@ -265,15 +267,15 @@ fun EditScreen(data: AppData, medId: String?, onDone: () -> Unit) {
                                 Modifier
                                     .weight(1f)
                                     .height(54.dp)
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .background(if (on) Teal else Color.White)
-                                    .border(2.dp, Teal, RoundedCornerShape(10.dp))
+                                    .clip(RoundedCornerShape(14.dp))
+                                    .background(if (on) Primary else CardWhite)
+                                    .border(2.dp, Primary, RoundedCornerShape(14.dp))
                                     .clickable { weekdays = if (on) weekdays - day else weekdays + day },
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Text(
                                     label.take(2),
-                                    color = if (on) Color.White else Teal,
+                                    color = if (on) Color.White else Primary,
                                     style = MaterialTheme.typography.bodyMedium,
                                 )
                             }
@@ -309,7 +311,7 @@ fun EditScreen(data: AppData, medId: String?, onDone: () -> Unit) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .heightIn(min = 56.dp),
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedCornerShape(18.dp),
                 ) { Text(Fmt.shortDate(startDate) + if (startDate == LocalDate.now()) " (today)" else "", style = MaterialTheme.typography.bodyLarge) }
             }
             Section("Last day (optional, e.g. for a short course)") {
@@ -319,7 +321,7 @@ fun EditScreen(data: AppData, medId: String?, onDone: () -> Unit) {
                         modifier = Modifier
                             .weight(1f)
                             .heightIn(min = 56.dp),
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(18.dp),
                     ) { Text(endDate?.let { Fmt.shortDate(it) } ?: "Keeps going (no last day)", style = MaterialTheme.typography.bodyLarge) }
                     if (endDate != null) {
                         IconButton(onClick = { endDate = null }) {
@@ -332,12 +334,12 @@ fun EditScreen(data: AppData, medId: String?, onDone: () -> Unit) {
             error?.let {
                 Text(
                     it,
-                    color = Red,
+                    color = Rose,
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(RedLight)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(RoseLight)
                         .padding(12.dp),
                 )
             }
@@ -345,7 +347,7 @@ fun EditScreen(data: AppData, medId: String?, onDone: () -> Unit) {
             BigButton("Save", { save() }, Modifier.fillMaxWidth())
             if (existing != null) {
                 TextButton(onClick = { confirmDelete = true }, modifier = Modifier.align(Alignment.CenterHorizontally)) {
-                    Text("Delete this pill", color = Red, style = MaterialTheme.typography.bodyLarge)
+                    Text("Delete this pill", color = Rose, style = MaterialTheme.typography.bodyLarge)
                 }
             }
             Spacer(Modifier.height(24.dp))
@@ -362,7 +364,7 @@ fun EditScreen(data: AppData, medId: String?, onDone: () -> Unit) {
                     confirmDelete = false
                     Repo.deleteMed(context, existing.id)
                     onDone()
-                }) { Text("Delete", color = Red) }
+                }) { Text("Delete", color = Rose) }
             },
             dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text("Keep it") } },
         )
@@ -371,8 +373,15 @@ fun EditScreen(data: AppData, medId: String?, onDone: () -> Unit) {
 
 @Composable
 private fun Section(title: String, content: @Composable () -> Unit) {
-    Column {
-        Text(title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = 8.dp))
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(26.dp))
+            .background(CardWhite)
+            .border(1.5.dp, Line, RoundedCornerShape(26.dp))
+            .padding(16.dp),
+    ) {
+        Text(title, style = MaterialTheme.typography.titleLarge, color = Ink, modifier = Modifier.padding(bottom = 10.dp))
         content()
     }
 }
@@ -396,9 +405,9 @@ private fun StepButton(label: String, onClick: () -> Unit) {
     Box(
         Modifier
             .size(52.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(TealLight)
+            .clip(RoundedCornerShape(18.dp))
+            .background(PrimarySoft)
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
-    ) { Text(label, style = MaterialTheme.typography.headlineSmall, color = Teal) }
+    ) { Text(label, style = MaterialTheme.typography.headlineSmall, color = Primary) }
 }

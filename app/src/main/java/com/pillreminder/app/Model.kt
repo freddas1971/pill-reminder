@@ -80,16 +80,29 @@ fun doseKey(medId: String, date: LocalDate, minute: Int) = "$medId|$date|$minute
 data class Settings(
     val followUps: Boolean = true,
     val ringContinuously: Boolean = false,
+    /** Family alerts: push messages to a second person through the free ntfy app. */
+    val familyEnabled: Boolean = false,
+    val personName: String = "",
+    val ntfyTopic: String = "",
+    val ntfyServer: String = "https://ntfy.sh",
 ) {
     fun toJson(): JSONObject = JSONObject().apply {
         put("followUps", followUps)
         put("ringContinuously", ringContinuously)
+        put("familyEnabled", familyEnabled)
+        put("personName", personName)
+        put("ntfyTopic", ntfyTopic)
+        put("ntfyServer", ntfyServer)
     }
 
     companion object {
         fun fromJson(o: JSONObject?): Settings = if (o == null) Settings() else Settings(
             followUps = o.optBoolean("followUps", true),
             ringContinuously = o.optBoolean("ringContinuously", false),
+            familyEnabled = o.optBoolean("familyEnabled", false),
+            personName = o.optString("personName", ""),
+            ntfyTopic = o.optString("ntfyTopic", ""),
+            ntfyServer = o.optString("ntfyServer", "https://ntfy.sh").ifBlank { "https://ntfy.sh" },
         )
     }
 }
